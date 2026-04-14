@@ -49,6 +49,7 @@
     font-size: 24px;
     font-weight: 900;
     letter-spacing: -1px;
+    user-select: none;
 }
 
 .loginButton {
