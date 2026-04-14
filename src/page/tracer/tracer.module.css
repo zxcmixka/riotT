@@ -1,0 +1,79 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 20px;
+  color: #ece8e1;
+}
+
+.title {
+  font-size: 40px;
+  font-weight: 900;
+  margin-bottom: 30px;
+  color: #ff4655;
+}
+
+.searchBox {
+  display: flex;
+  margin-bottom: 40px;
+  border: 1px solid #333;
+}
+
+.input {
+  padding: 15px;
+  width: 300px;
+  background: #1f2326;
+  border: none;
+  color: white;
+  outline: none;
+}
+
+.button {
+  background: #ff4655;
+  color: white;
+  border: none;
+  padding: 0 20px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.content {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.card {
+  background: #1f2326;
+  padding: 30px;
+  border-left: 5px solid #ff4655;
+  min-width: 300px;
+}
+
+.nickname { margin-bottom: 20px; }
+.tag { color: #768079; }
+
+.rankInfo {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.rankImg { width: 80px; height: 80px; }
+.stats span { color: #ff4655; font-weight: bold; }
+
+.matches {
+  background: #1f2326;
+  padding: 20px;
+  min-width: 300px;
+}
+
+.matchItem {
+  padding: 10px;
+  border-bottom: 1px solid #333;
+  font-size: 14px;
+  color: #768079;
+}
+
+.error { color: #ff4655; margin-bottom: 20px; }
