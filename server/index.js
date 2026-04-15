@@ -6,36 +6,54 @@ require('dotenv').config();
 const app = express();
 app.use(cors());
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
-app.get('/api/v1/stats/:name/:tag', async (req, res) => {
-    const { name, tag } = req.params;
-    const apiKey = process.env.RIOT_API_KEY;
-
-    // Официальный адрес для поиска аккаунта (регион europe)
-    const url = `https://riotgames.com{name}/${tag}`;
-    
-    console.log(`>>> Запрос к Riot: ${url}`);
+app.get('/api/v1/mmr/:region/:name/:tag', async (req, res) => {
+    const { region, name, tag } = req.params;
 
     try {
+        const url = `https://api.henrikdev.xyz/valorant/v1/mmr/${region}/${name}/${tag}`;
+
         const response = await axios.get(url, {
-            headers: { "X-Riot-Token": apiKey }
+            headers: {
+                Authorization: process.env.HENRIK_API_KEY || ""
+            }
         });
-        
-        console.log("✅ Успех: Игрок найден!");
-        res.json(response.data); // Вернет gameName, tagLine и puuid
+
+        const data = response.data.data;
+
+        const result = {
+            name: data.name,
+            tag: data.tag,
+            region: data.region,
+
+            currentTier: data.currenttierpatched,
+            rankRR: data.ranking_in_tier,
+            elo: data.elo,
+
+            images: {
+                small: data.images.small,
+                large: data.images.large,
+                triangle: data.images.triangle_down
+            }
+        };
+
+        res.json(result);
+
     } catch (e) {
-        const status = e.response?.status;
-        console.error(`❌ Ошибка API! Статус: ${status || 'Сайт не найден'}`);
-        
-        res.status(status || 500).json({ 
-            error: "Ошибка API", 
-            message: e.message 
+        const status = e.response?.status || 500;
+
+        res.status(status).json({
+            error: true,
+            message: e.response?.data || e.message
         });
     }
 });
 
+app.get('/', (req, res) => {
+    res.send('Valorant MMR API работает 🚀');
+});
+
 app.listen(PORT, () => {
-    console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);
-    console.log(`👉 Тест: http://localhost:${PORT}/api/v1/stats/ScreaM/777`);
+    console.log(`Сервер запущен на порту ${PORT}`);
 });
