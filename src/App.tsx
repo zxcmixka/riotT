@@ -2,7 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { Header } from "./components/Header/Header";
 import { Tracer } from "./page/tracer/Tracer";
 import { Main } from "./page/main/Main";
-import { About } from "./page/about/about"
+import { About } from "./page/about/About"
 import s from "./App.module.css"; 
 
 
