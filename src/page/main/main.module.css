@@ -1,0 +1,58 @@
+.link {
+    color: #ece8e1;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 2px;
+    transition: color 0.2s ease;
+    position: relative;
+}
+
+.link:hover {
+    color: #ff4655; 
+}
+
+.link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -5px;
+    left: 0;
+    background-color: #ff4655;
+    transition: width 0.2s ease;
+}
+
+.link:hover::after {
+    width: 100%;
+}
+
+.mainImg{
+    position: fixed;
+    z-index: 1000;
+    right: 0;
+    pointer-events: none;
+    max-width: 170vh;
+    top: 10vh;
+}
+
+.mainTextRed{
+  font-weight: bold;
+  color: #ff4655;
+  z-index: 5;
+  font-size: 14vh;
+  
+}
+
+.mainTextWhite{
+    font-size: 14vh;
+    font-weight: bold;
+}
+
+.textContainer{
+    background-color: aqua;
+    width: 75vh;
+    height: 30vh;
+    margin-top: 5vh;
+}

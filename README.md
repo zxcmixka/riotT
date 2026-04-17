@@ -71,3 +71,9 @@ export default defineConfig([
   },
 ])
 ```
+color pull:
+
+red color: #ff4655
+background color: #1f2326
+header background: #111
+text color: #ece8e1

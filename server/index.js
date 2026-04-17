@@ -51,7 +51,7 @@ app.get('/api/v1/mmr/:region/:name/:tag', async (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    res.send('Valorant MMR API работает 🚀');
+    res.send('Valorant MMR API работает');
 });
 
 app.listen(PORT, () => {
