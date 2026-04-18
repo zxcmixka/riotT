@@ -10,10 +10,12 @@ export const Main = () => {
     return(
         <>
         <div className={s.container}>
+            <img className={s.blackdEclips} src={Eclips2} alt="" />
             <div className={s.textContainer}>
                 <h1 className={s.mainTextRed}>Valorant</h1> 
                 <h1 className={s.mainTextWhite}>Stats</h1>
                 <h2>Check your statistics right now!</h2>
+                <img className={s.redEclips} src={Eclips1} alt="" />
                 <div>
                      <Link to="/tracer" className={s.link}>let's look at the statistics</Link>
                 </div>

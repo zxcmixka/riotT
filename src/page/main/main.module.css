@@ -48,11 +48,36 @@
 .mainTextWhite{
     font-size: 14vh;
     font-weight: bold;
+    z-index: 5;
 }
 
 .textContainer{
-    background-color: aqua;
     width: 75vh;
     height: 30vh;
     margin-top: 5vh;
+    margin-left: 10vh;
+    z-index: 5;
+    user-select: none;
+}
+
+h2{
+    margin-top: 7vh;
+    margin-bottom: 3vh;
+}
+
+.redEclips{
+    position: fixed;
+    max-width: 120vh;
+    right: -10vh;
+    pointer-events: none;
+    top: 10vh;
+}
+
+.blackdEclips{
+    position: fixed;
+    max-width: 70vh;
+    left: -15vh;
+    top: 70vh;
+    z-index: 1;
+    pointer-events: none;
 }
