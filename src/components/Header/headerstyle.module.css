@@ -3,7 +3,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 0 40px;
-    height: 80px;
+    height: 8vh;
     background-color: #111; 
     border-bottom: 1px solid #333;
     font-family: 'FF Mark W05 Ratchet', sans-serif;
@@ -11,7 +11,7 @@
 
 .nav {
     display: flex;
-    gap: 30px;
+    gap: 2vh;
 }
 
 .link {
@@ -19,7 +19,7 @@
     text-decoration: none;
     text-transform: uppercase;
     font-weight: 700;
-    font-size: 14px;
+    font-size: 1,5vh;
     letter-spacing: 2px;
     transition: color 0.2s ease;
     position: relative;
@@ -33,7 +33,7 @@
     content: '';
     position: absolute;
     width: 0;
-    height: 2px;
+    height: 0,5vh;
     bottom: -5px;
     left: 0;
     background-color: #ff4655;
@@ -46,7 +46,7 @@
 
 .logo {
     color: #ff4655;
-    font-size: 24px;
+    font-size: 2vh;
     font-weight: 900;
     letter-spacing: -1px;
     user-select: none;
@@ -56,7 +56,7 @@
     background-color: #ff4655; 
     color: white;
     border: none;
-    padding: 8px 20px;
+    padding: 1vh 2vh;
     font-weight: bold;
     cursor: pointer;
     text-transform: uppercase;
