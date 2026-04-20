@@ -19,7 +19,7 @@
     text-decoration: none;
     text-transform: uppercase;
     font-weight: 700;
-    font-size: 1,5vh;
+    font-size: 1.5vh;
     letter-spacing: 2px;
     transition: color 0.2s ease;
     position: relative;
@@ -33,7 +33,7 @@
     content: '';
     position: absolute;
     width: 0;
-    height: 0,5vh;
+    height: 0.5vh;
     bottom: -5px;
     left: 0;
     background-color: #ff4655;
