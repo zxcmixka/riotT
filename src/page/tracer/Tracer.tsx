@@ -20,7 +20,14 @@ type Match = {
   mode: string;
   result: "win" | "loss";
   agent: string;
+  agentIcon?: string | null;
   kda: string;
+    score: {
+    red: number;
+    blue: number;
+  };
+  isMatchMVP: boolean;
+  isTeamMVP: boolean;
 };
 
 export const Tracer = () => {
@@ -31,13 +38,8 @@ export const Tracer = () => {
   const [error, setError] = useState("");
 
   const fetchStats = async () => {
-    if (!query.trim()) {
-      setError("Введите ник");
-      return;
-    }
-
     if (!query.includes("#")) {
-      setError("Введите в формате Name#Tag");
+      setError("Введите Name#Tag");
       return;
     }
 
@@ -46,26 +48,19 @@ export const Tracer = () => {
     setData(null);
     setMatches([]);
 
-    const [name, tag] = query.split("#").map(s => s.trim());
+    const [name, tag] = query.split("#").map((s) => s.trim());
 
     try {
-      // 🔥 ДВА ЗАПРОСА ПАРАЛЛЕЛЬНО (быстро и стабильно)
       const [mmrRes, matchesRes] = await Promise.all([
-        axios.get(
-          `http://localhost:5000/api/v1/mmr/eu/${name}/${tag}`,
-          { headers: { "Cache-Control": "no-cache" } }
-        ),
-        axios.get(
-          `http://localhost:5000/api/v1/matches/eu/${name}/${tag}`,
-          { headers: { "Cache-Control": "no-cache" } }
-        )
+        axios.get(`http://localhost:5000/api/v1/mmr/eu/${name}/${tag}`),
+        axios.get(`http://localhost:5000/api/v1/matches/eu/${name}/${tag}`),
       ]);
 
       setData(mmrRes.data);
-      setMatches(matchesRes.data.slice(0, 5)); // только 5 матчей
+      setMatches(matchesRes.data);
 
-    } catch (err) {
-      setError("Игрок не найден или ошибка сервера");
+    } catch (e) {
+      setError("Ошибка загрузки данных");
     } finally {
       setLoading(false);
     }
@@ -81,9 +76,7 @@ export const Tracer = () => {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className={s.input}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") fetchStats();
-          }}
+          onKeyDown={(e) => e.key === "Enter" && fetchStats()}
         />
 
         <button
@@ -100,76 +93,76 @@ export const Tracer = () => {
 
       {data && (
         <>
-          {/* 🔹 РАНГ */}
+          {/* PLAYER */}
           <div className={s.card}>
             <h2>
-              {data.name}{" "}
-              <span className={s.tag}>#{data.tag}</span>
+              {data.name} <span>#{data.tag}</span>
             </h2>
 
             <div className={s.rankBlock}>
-              <img
-                src={data.images?.large}
-                alt="rank"
-                className={s.rankIcon}
-              />
+              <img src={data.images.large} className={s.rankIcon} />
 
               <div>
-                <p className={s.rank}>
-                  {data.currentTier}
-                </p>
-
-                <p className={s.rr}>
-                  {data.rankRR} RR
-                </p>
-
-                <p className={s.elo}>
-                  ELO: {data.elo}
-                </p>
-
-                {/* прогресс */}
-                <div className={s.progress}>
-                  <div style={{ width: `${data.rankRR}%` }} />
-                </div>
+                <p>{data.currentTier}</p>
+                <p>{data.rankRR} RR</p>
+                <p>ELO: {data.elo}</p>
               </div>
             </div>
           </div>
 
-          {/* 🔥 МАТЧИ */}
-          {matches.length > 0 && (
-            <div className={s.matches}>
-              <h3>Last Matches</h3>
+          {/* MATCHES */}
+          <div className={s.matches}>
+            <h3>Last Matches</h3>
 
-              {matches.map((m, i) => (
-                <div key={i} className={s.matchCard}>
-                  <div>
-                    <p className={s.map}>{m.map}</p>
-                    <p className={s.mode}>{m.mode}</p>
-                  </div>
+            {matches.map((m, i) => (
+              <div key={i} className={s.matchCard}>
+                <div>
+                  <p className={s.map}>{m.map}</p>
+                  <p className={s.mode}>{m.mode}</p>
+                </div>
 
+                <div>
+                  <p className={m.result === "win" ? s.win : s.loss}>
+                    {m.result.toUpperCase()}
+                  </p>
+                  {m.isMatchMVP === true && (
+                    <p className={s.mvp}>🏆 Match MVP</p>
+                  )}
+
+                  {m.isTeamMVP === true && !m.isMatchMVP && (
+                    <p className={s.teamMvp}>⭐ Team MVP</p>
+                  )}
+                </div>
+
+                <div className={s.agentBlock}>
+                  {m.agentIcon ? (
+                    <img
+                      src={m.agentIcon}
+                      className={s.agentIcon}
+                      alt={m.agent}
+                    />
+                  ) : (
+                    <div className={s.agentFallback}>
+                      {m.agent}
+                    </div>
+                  )}
+
+                    <p className={s.agentName}>
+                      {m.agent.toUpperCase()}
+                    </p>
+                </div>
+
+                <div>
+                  <p>{m.kda}</p>
                   <div>
-                    <p
-                      className={
-                        m.result === "win"
-                          ? s.win
-                          : s.loss
-                      }
-                    >
-                      {m.result.toUpperCase()}
+                    <p className={s.score}>
+                      {m.score.red} : {m.score.blue}
                     </p>
                   </div>
-
-                  <div>
-                    <p>{m.agent}</p>
-                  </div>
-
-                  <div>
-                    <p>{m.kda}</p>
-                  </div>
                 </div>
-              ))}
-            </div>
-          )}
+              </div>
+            ))}
+          </div>
         </>
       )}
     </div>

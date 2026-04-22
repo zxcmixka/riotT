@@ -8,8 +8,6 @@ app.use(cors());
 
 const PORT = process.env.PORT || 5000;
 
-
-// AXIOS INSTANCE (Henrik API)
 const henrikAPI = axios.create({
   baseURL: "https://api.henrikdev.xyz/valorant",
   headers: {
@@ -17,51 +15,42 @@ const henrikAPI = axios.create({
   },
 });
 
+/* =========================
+   AGENT CACHE (FIX)
+========================= */
 
-//   SIMPLE CACHE (in-memory)
+let agentMap = {};
 
-const cache = new Map();
-const CACHE_TTL = 60 * 1000; // 60 сек
+const normalize = (str) =>
+  (str || "")
+    .toLowerCase()
+    .replace(/\s/g, "")
+    .replace("/", "");
 
-const getCache = (key) => {
-  const item = cache.get(key);
-  if (!item) return null;
+const loadAgents = async () => {
+  try {
+    const res = await axios.get(
+      "https://valorant-api.com/v1/agents?isPlayableCharacter=true"
+    );
 
-  if (Date.now() > item.expiry) {
-    cache.delete(key);
-    return null;
+    res.data.data.forEach((agent) => {
+      agentMap[normalize(agent.displayName)] =
+        agent.displayIcon;
+    });
+
+    console.log("Agents loaded:", Object.keys(agentMap).length);
+  } catch (e) {
+    console.log("Agent load error:", e.message);
   }
-
-  return item.data;
 };
 
-const setCache = (key, data) => {
-  cache.set(key, {
-    data,
-    expiry: Date.now() + CACHE_TTL,
-  });
-};
+loadAgents();
 
-// HELPERS
-
-const normalizePlayer = (players, name, tag) => {
-  return players.find(
-    (p) =>
-      p.name.toLowerCase() === name.toLowerCase() &&
-      p.tag.toLowerCase() === tag.toLowerCase()
-  );
-};
-
-// ROUTES
-
-
-// MMR
+/* =========================
+   MMR
+========================= */
 app.get("/api/v1/mmr/:region/:name/:tag", async (req, res) => {
   const { region, name, tag } = req.params;
-  const cacheKey = `mmr-${region}-${name}-${tag}`;
-
-  const cached = getCache(cacheKey);
-  if (cached) return res.json(cached);
 
   try {
     const response = await henrikAPI.get(
@@ -70,39 +59,28 @@ app.get("/api/v1/mmr/:region/:name/:tag", async (req, res) => {
 
     const data = response.data.data;
 
-    const result = {
+    res.json({
       name: data.name,
       tag: data.tag,
       region: data.region,
-
       currentTier: data.currenttierpatched,
       rankRR: data.ranking_in_tier,
       elo: data.elo,
-
       images: {
         small: data.images.small,
         large: data.images.large,
-        triangle: data.images.triangle_down,
       },
-    };
-
-    setCache(cacheKey, result);
-    res.json(result);
-  } catch (e) {
-    res.status(e.response?.status || 500).json({
-      error: true,
-      message: e.response?.data || e.message,
     });
+  } catch (e) {
+    res.status(500).json({ error: true, message: e.message });
   }
 });
 
-// MATCHES
+/* =========================
+   MATCHES (FIXED)
+========================= */
 app.get("/api/v1/matches/:region/:name/:tag", async (req, res) => {
   const { region, name, tag } = req.params;
-  const cacheKey = `matches-${region}-${name}-${tag}`;
-
-  const cached = getCache(cacheKey);
-  if (cached) return res.json(cached);
 
   try {
     const response = await henrikAPI.get(
@@ -111,11 +89,13 @@ app.get("/api/v1/matches/:region/:name/:tag", async (req, res) => {
 
     const matches = response.data.data;
 
-    const formatted = matches.map((match) => {
-      const player = normalizePlayer(
-        match.players.all_players,
-        name,
-        tag
+    const formatted = matches.slice(0, 5).map((match) => {
+      const players = match.players.all_players;
+
+      const player = players.find(
+        (p) =>
+          p.name.toLowerCase() === name.toLowerCase() &&
+          p.tag.toLowerCase() === tag.toLowerCase()
       );
 
       if (!player) return null;
@@ -124,134 +104,45 @@ app.get("/api/v1/matches/:region/:name/:tag", async (req, res) => {
         (player.team === "Red" && match.teams.red.has_won) ||
         (player.team === "Blue" && match.teams.blue.has_won);
 
+      const matchMVP = players.reduce((best, p) => {
+        return (!best || (p.stats.score || 0) > (best.stats.score || 0))
+          ? p
+          : best;
+      }, null);
+
+      const teamPlayers = players.filter(
+        (p) => p.team === player.team
+      );
+
+      const teamMVP = teamPlayers.reduce((best, p) => {
+        return (!best || (p.stats.score || 0) > (best.stats.score || 0))
+          ? p
+          : best;
+      }, null);
+
       return {
         map: match.metadata.map,
         mode: match.metadata.mode,
-        date: match.metadata.game_start,
-
         result: isWin ? "win" : "loss",
-
         agent: player.character,
 
-        kills: player.stats.kills,
-        deaths: player.stats.deaths,
-        assists: player.stats.assists,
+        agentIcon:
+          agentMap[normalize(player.character)] || null,
 
         kda: `${player.stats.kills}/${player.stats.deaths}/${player.stats.assists}`,
 
-        hs: player.stats.headshots,
-        body: player.stats.bodyshots,
-        legs: player.stats.legshots,
+        score: {
+          team: player.team,
+          red: match.teams.red.rounds_won,
+          blue: match.teams.blue.rounds_won,
+        },
+
+        isMatchMVP: matchMVP?.puuid === player.puuid,
+        isTeamMVP: teamMVP?.puuid === player.puuid,
       };
     }).filter(Boolean);
 
-    setCache(cacheKey, formatted);
     res.json(formatted);
-  } catch (e) {
-    res.status(e.response?.status || 500).json({
-      error: true,
-      message: e.message,
-    });
-  }
-});
-
-// STATS
-app.get("/api/v1/stats/:region/:name/:tag", async (req, res) => {
-  const { region, name, tag } = req.params;
-  const cacheKey = `stats-${region}-${name}-${tag}`;
-
-  const cached = getCache(cacheKey);
-  if (cached) return res.json(cached);
-
-  try {
-    const response = await henrikAPI.get(
-      `/v3/matches/${region}/${name}/${tag}`
-    );
-
-    const matches = response.data.data;
-
-    let totalKills = 0;
-    let totalDeaths = 0;
-    let totalAssists = 0;
-    let wins = 0;
-
-    matches.forEach((match) => {
-      const player = normalizePlayer(
-        match.players.all_players,
-        name,
-        tag
-      );
-
-      if (!player) return;
-
-      totalKills += player.stats.kills;
-      totalDeaths += player.stats.deaths;
-      totalAssists += player.stats.assists;
-
-      if (
-        (player.team === "Red" && match.teams.red.has_won) ||
-        (player.team === "Blue" && match.teams.blue.has_won)
-      ) {
-        wins++;
-      }
-    });
-
-    const games = matches.length || 1;
-
-    const result = {
-      games,
-      winrate: ((wins / games) * 100).toFixed(1),
-
-      avgKills: (totalKills / games).toFixed(1),
-      avgDeaths: (totalDeaths / games).toFixed(1),
-      avgAssists: (totalAssists / games).toFixed(1),
-
-      kd: (totalKills / totalDeaths || 0).toFixed(2),
-    };
-
-    setCache(cacheKey, result);
-    res.json(result);
-  } catch (e) {
-    res.status(500).json({ error: true });
-  }
-});
-
-// PROFILE (всё сразу)
-app.get("/api/v1/profile/:region/:name/:tag", async (req, res) => {
-  const { region, name, tag } = req.params;
-  const cacheKey = `profile-${region}-${name}-${tag}`;
-
-  const cached = getCache(cacheKey);
-  if (cached) return res.json(cached);
-
-  try {
-    const [mmrRes, matchesRes] = await Promise.all([
-      henrikAPI.get(`/v1/mmr/${region}/${name}/${tag}`),
-      henrikAPI.get(`/v3/matches/${region}/${name}/${tag}`),
-    ]);
-
-    const mmr = mmrRes.data.data;
-    const matches = matchesRes.data.data;
-
-    const result = {
-      player: {
-        name: mmr.name,
-        tag: mmr.tag,
-        region: mmr.region,
-      },
-
-      rank: {
-        tier: mmr.currenttierpatched,
-        rr: mmr.ranking_in_tier,
-        elo: mmr.elo,
-        image: mmr.images.large,
-      },
-
-      matches: matches.slice(0, 5), // последние 5 игр
-    };
-
-    setCache(cacheKey, result);
-    res.json(result);
   } catch (e) {
     res.status(500).json({
       error: true,
@@ -260,10 +151,6 @@ app.get("/api/v1/profile/:region/:name/:tag", async (req, res) => {
   }
 });
 
-app.get("/", (req, res) => {
-  res.send("Valorant Tracker API работает");
-});
-
 app.listen(PORT, () => {
-  console.log(`Сервер запущен на порту ${PORT}`);
+  console.log(`Server running on ${PORT}`);
 });
