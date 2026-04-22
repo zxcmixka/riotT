@@ -3,7 +3,7 @@
     text-decoration: none;
     text-transform: uppercase;
     font-weight: 700;
-    font-size: 14px;
+    font-size: 2vh;
     letter-spacing: 2px;
     transition: color 0.2s ease;
     position: relative;
@@ -35,6 +35,7 @@
     pointer-events: none;
     max-width: 170vh;
     top: 10vh;
+    min-width: 150vh;
 }
 
 .mainTextRed{
@@ -42,20 +43,21 @@
   color: #ff4655;
   z-index: 5;
   font-size: 14vh;
-  
+  margin-top: 10vh;
 }
 
 .mainTextWhite{
     font-size: 14vh;
     font-weight: bold;
     z-index: 5;
+    margin-top: 10vh;
 }
 
 .textContainer{
     width: 75vh;
     height: 30vh;
     margin-top: 5vh;
-    margin-left: 10vh;
+    margin-left: 5vh;
     z-index: 5;
     user-select: none;
 }
@@ -63,11 +65,13 @@
 h2{
     margin-top: 7vh;
     margin-bottom: 3vh;
+    font-size: 3vh;
 }
 
 .redEclips{
     position: fixed;
     max-width: 120vh;
+    min-width: 120vh;
     right: -10vh;
     pointer-events: none;
     top: 10vh;
@@ -76,6 +80,7 @@ h2{
 .blackdEclips{
     position: fixed;
     max-width: 70vh;
+    min-width: 70vh;
     left: -15vh;
     top: 70vh;
     z-index: 1;

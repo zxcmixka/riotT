@@ -7,7 +7,7 @@
 }
 
 .title {
-  font-size: 40px;
+  font-size: 4vh;
   font-weight: 900;
   margin-bottom: 30px;
   color: #ff4655;
@@ -21,7 +21,7 @@
 
 .input {
   padding: 15px;
-  width: 300px;
+  width: 25vh;
   background: #1f2326;
   border: none;
   color: white;
@@ -48,7 +48,7 @@
   background: #1f2326;
   padding: 30px;
   border-left: 5px solid #ff4655;
-  min-width: 300px;
+  min-width: 25vh;
 }
 
 .nickname { margin-bottom: 20px; }
@@ -66,13 +66,13 @@
 .matches {
   background: #1f2326;
   padding: 20px;
-  min-width: 300px;
+  min-width: 25vh;
 }
 
 .matchItem {
   padding: 10px;
   border-bottom: 1px solid #333;
-  font-size: 14px;
+  font-size: 2vh;
   color: #768079;
 }
 
